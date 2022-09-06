@@ -70,7 +70,7 @@ class Cycling extends Workout{
 
 const run1 = new Running([39,-12], 5.2,24,178);
 const cycling1 = new Cycling([39,-12], 5.2,24,178);
-console.log(run1,cycling1);
+// console.log(run1,cycling1);
 ///////////////////////////////////////////
 // Application Architecture
 class App{
@@ -82,7 +82,14 @@ class App{
 
     constructor(){
         // this.workouts = [];
+        
+        // Get user's position
         this._getPosition();
+
+        // Get data from local storage
+        this._getLocalStorage();
+
+        // Attach Eventhandlers
         form.addEventListener('submit', this._newWorkout.bind(this));
         inputType.addEventListener('change', this._toggleElevationField);
         containerWorkouts.addEventListener('click', this._moveToPopup.bind(this));
@@ -100,8 +107,8 @@ class App{
 
     _loadMap(position){
         const {latitude, longitude} = position.coords;
-        console.log(latitude, longitude);
-        console.log(`https://www.google.co.in/maps/@${latitude},${longitude}`);
+        // console.log(latitude, longitude);
+        // console.log(`https://www.google.co.in/maps/@${latitude},${longitude}`);
         const coords = [latitude, longitude]
         this.#map = L.map('map').setView(coords, this.#mapZoomLevel);
     
@@ -111,6 +118,10 @@ class App{
     
         // Handling clicks on map
         this.#map.on('click', this._showForm.bind(this));
+
+        this.#workouts.forEach(work => {
+            this._renderWorkoutMarker(work);
+        });
     }
 
     _showForm(mapE){
@@ -178,6 +189,8 @@ class App{
     // Hide form + Clear input fields
     this._hideForm();
 
+    // Set local storage to all workouts
+    this._setLocalStorage();
     }
 
     _renderWorkoutMarker(workout){
@@ -257,7 +270,27 @@ class App{
         });
 
         // Using Public interface
-        workout.click();
+        // workout.click();
+    }
+
+    _setLocalStorage(){
+        localStorage.setItem('workouts', JSON.stringify(this.#workouts));
+    }
+
+    _getLocalStorage(){
+        const data = JSON.parse(localStorage.getItem('workouts'));
+
+        if(!data) return;
+
+        this.#workouts = data;
+        this.#workouts.forEach(work => {
+            this._renderWorkout(work);
+        });
+    }
+    reset(){
+        localStorage.removeItem('workouts');
+        // location is big object that contains lots of methods and properties in browser
+        location.reload();
     }
 }
 
